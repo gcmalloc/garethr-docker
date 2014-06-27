@@ -47,33 +47,27 @@ define docker::run(
 
   $sanitised_title = regsubst($title, '[^0-9A-Za-z.\-]', '-')
 
-  $provider = $::operatingsystem ? {
-    'Ubuntu' => 'upstart',
-    default  => undef,
-  }
-
   $notify = str2bool($restart_service) ? {
     true    => Service["docker-${sanitised_title}"],
     default => undef,
   }
 
-  case $::osfamily {
-    'Debian': {
+  case $::operatingsystem {
+    'Ubuntu': {
       $initscript = "/etc/init/docker-${sanitised_title}.conf"
       $init_template = 'docker/etc/init/docker-run.conf.erb'
       $hasstatus  = true
       $hasrestart = false
       $mode = '0644'
+      $provider = 'upstart'
     }
-    'RedHat': {
+    default {
       $initscript = "/etc/init.d/docker-${sanitised_title}"
       $init_template = 'docker/etc/init.d/docker-run.erb'
       $hasstatus  = undef
       $hasrestart = undef
       $mode = '0755'
-    }
-    default: {
-      fail('Docker needs a RedHat or Debian based system.')
+      $provider = undef
     }
   }
 
