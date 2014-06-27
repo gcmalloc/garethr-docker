@@ -22,12 +22,24 @@
 ## Description: Docker container for <%= @title %>
 #### END INIT INFO
 
-. /etc/init.d/functions
+#. /etc/init.d/functions
 
 docker="/usr/bin/docker"
 prog="docker-<%= @title %>"
 cidfile="/var/run/$prog.cid"
+<% if @osfamily == 'Debian'%>
+lockfile="/var/lock/$prog"
+
+success() {
+    return 0
+}
+
+failure() {
+    rpeturn 1
+}
+<% else %>
 lockfile="/var/lock/subsys/$prog"
+<% end %>
 
 start() {
     [ -x $docker ] || exit 5
